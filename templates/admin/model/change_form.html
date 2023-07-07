@@ -1,0 +1,67 @@
+{% extends "admin/change_form.html" %}
+<head>
+    
+</head>
+{% load i18n admin_urls %}
+{% block object-tools-items %}
+<li>
+    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal">Author</button>
+</li>
+    <li>
+        <a href="{% url opts|admin_urlname:'history' original.pk|admin_urlquote %}" class="historylink">{% translate "History" %}</a>
+    </li>
+    {% comment %} <li>
+        <a href="mylink/" class="historylink">My Link</a>
+    </li> {% endcomment %}
+    {% comment %} <h1 id = "new">{{ original.author }} {{ original.author.place }}</h1> {% endcomment %}
+    
+
+   
+    {% if has_absolute_url %}
+        <li>
+            <a href="{% url 'admin:view_on_site' content_type_id original.pk %}" class="viewsitelink">{% translate "View on site" %}</a>
+        </li>
+    {% endif %}
+    <!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Author Details</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+        {% comment %} <h1>{{original.author}}</h1> {% endcomment %}
+        <table class="table">
+            <thead>
+              <tr class="table-warning">
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">age</th>
+                <th scope="col">Place</th>
+                <th scope="col">Created</th>
+
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="table-info">
+                <th scope="row">{{original.author.id}}</th>
+                <td>{{original.author.name}}</td>
+                <td>{{original.author.age}}</td>
+                <td>{{original.author.place}}</td>
+                <td>{{original.author.created}}</td>
+              </tr>
+              
+             
+            </tbody>
+          </table>
+        </div>
+        {% comment %} <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div> {% endcomment %}
+      </div>
+    </div>
+  </div>
+  <!--  Model End -->
+{% endblock %}

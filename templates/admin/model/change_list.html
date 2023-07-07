@@ -1,0 +1,206 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+{% block object-tools-items %}
+<p id='div1'></p>
+    <li>
+      {{ block.super }}
+    </li>
+    <li>
+        <a href="mylink/" class="historylink">My Link</a>
+    </li>
+  
+    {% if has_absolute_url %}
+
+        <li>
+            
+            <a href="{% url 'admin:view_on_site' content_type_id original.pk %}" class="viewsitelink">{% translate "View on site" %}</a>
+        </li>
+    {% endif %}
+    <!--===============================================POST UPDATE=========================================================-->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="staticBackdropLabel" style="color:blue">POST UPDATE</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+           
+          </div>
+          <div class="modal-body info" >
+          
+              <div class="form-group row">
+                <div class="col-sm-2">
+                <label for="author_name" class="col-sm-3 col-form-label col-form-label-lg">Author</label>
+                </div>
+                <div class="col-sm-10 mt-2">
+                <input type="text" id="author_name"  class="form-control" name="author_name" readonly>
+                  {% comment %} <input type="text" id="author_id" name="author_id" > {% endcomment %}
+                </div>
+              </div>
+              <div class="form-group row mt-4">
+                <div class="col-sm-2">
+                <label for="author_name" class="col-sm-3 col-form-label col-form-label-lg">Blog</label>
+                </div>
+                <div class="col-sm-10">
+                  <input type="number" id="post_id" name="post_id" hidden>
+                  <textarea id="blog" rows="5" cols="90" class="form-control" name="blog"></textarea>
+                </div>
+              </div>
+            
+           
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" onclick="post_patch()">Save</button>
+          </div>
+       
+        </div>
+      </div>
+    </div>
+<!--========================================================================================================-->
+     <!-- Modal  Author Post GET -->
+<div class="modal fade" id="authorModel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel" style="color:blue">Blog Details</h1>
+          <div class="d-flex justify-content-center"> <button type="button" class="btn btn-primary btn-sm mx-4">Add Post</button></div>
+         
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         
+        </div>
+        <div class="modal-body">
+        {% comment %} <h1>{{original.author}}</h1> {% endcomment %}
+        <table class="table table-bordered">
+            <thead>
+              <tr class="table-warning">
+               
+                <th scope="col">S.No</th>
+                <th scope="col">Blog</th>
+                <th scope="col">Created</th>
+                <th scope="col">Updated</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody id='data'>
+             
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+         
+          <h6 class="" id='total_post' style="color:green"></h6>
+      </div>
+    </div>
+  </div>
+  <!--  Model End Author Post-->
+
+
+<!-- ADD POST-->
+
+
+<!-- End Add POSt  -->
+
+
+
+  
+  <script>
+
+    //Get All Post Filter By Author
+    function Get_author_post(obj_id){
+        var p_id = parseInt(obj_id)
+        localStorage.setItem("author_id", p_id);
+        
+        $.ajax({url: `/author_post/${p_id}`, success: function(result){
+          let data = " ";
+          //var r = result.data
+           for(let i=0; i < result.length; i++){
+            get_time =result[i].created
+            da = new Date(get_time)
+            time_format = da.getDate() + "-" + da.getMonth() +"-"+da.getFullYear() + "  "+da.getHours()+":"+da.getMinutes()+ ":"+ da. getSeconds()
+            data += `<tr class="table-info"><td>${i+1}</td><td>${result[i].blog}</td><td>${time_format}</td><td>${result[i].updated}</td><td><button type="button" class="link-danger bg-dark w-75 m-2 text-center rounded-pill" onclick="Retrive_post(${result[i].id})"  data-bs-toggle="modal" data-bs-target="#staticBackdrop">Edit</button><button onclick="post_delete(${result[i].id})" class="link-danger bg-dark w-75 m-2 text-center rounded-pill">Delete</button></td></tr>`
+             //<a href="/admin/custom_app/post/${result[i].id}/delete/" class="link-danger bg-dark w-75 m-2 text-center">Delete</a>
+           }
+           //debugger
+           if(result.length==0){
+            data = "<tr><td colspan='4' class='text-center'>NO Post Available</td></tr>"
+            $("#data").html(data)
+            $("#total_post").text("Total Post:"+result.length)
+           }
+           else{
+            $("#data").html(data)
+             
+            $("#total_post").text("Total Post:"+result.length)
+           } 
+          }});
+    }
+
+    //Retrive Post By id
+    function Retrive_post(post_id){
+     var post_id = parseInt(post_id)
+      $.ajax({url:`/post/${post_id}`,success:function(result){
+        let post_data = " "
+       console.log(result.author_name)
+       $("#author_name").val(result.author_name);
+       $("#author_id").val(result.author);
+       $("#blog").val(result.blog);
+       $("#post_id").val(result.id);
+       
+      }})
+    }
+    </script>
+<script>
+
+   //Patch Method 
+ function post_patch(){
+  var post_id = $("#post_id").val()
+  $.ajax({
+    type: "POST",
+    url: `/post/${post_id}/`,  
+    data: {
+      'id':post_id,
+      'blog' :$("#blog").val(),
+      csrfmiddlewaretoken :$('input[name=csrfmiddlewaretoken]').val() ,
+    },
+    success: function(response) {
+      alert("Data Updated successfully")
+      $('#staticBackdrop').modal('hide');
+      var obj_id = $("#obj_id").val()
+      var author_id = localStorage.getItem('author_id')
+      author_id = parseInt(author_id)
+      Get_author_post(author_id)
+      $('#authorModel').modal('show');
+    }
+  });
+}
+
+//======================Delete
+function post_delete(post_id){
+  var post_id = parseInt(post_id)
+  var result = confirm("Are you sure you want to delete?");
+  if (result){
+  $.ajax({
+    type: "POST",
+    url: `/post/${post_id}/`,  
+    data: {
+      'id':post_id,
+      'delete' :'delete',
+      csrfmiddlewaretoken :$('input[name=csrfmiddlewaretoken]').val() ,
+    },
+    success: function(response) {
+     
+      $('#staticBackdrop').modal('hide');
+      var obj_id = $("#obj_id").val()
+      var author_id = localStorage.getItem('author_id')
+      author_id = parseInt(author_id)
+      Get_author_post(author_id)
+      $('#authorModel').modal('show');
+      //alert("Data Deleted successfully")
+    }
+  });
+}
+}
+</script>
+  
+{% endblock %}
+
+

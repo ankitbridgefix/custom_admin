@@ -23,4 +23,5 @@ urlpatterns = [
     #get Perticular Post
     path('post/<int:post_pk>/', views.PostData.as_view()),
     path('post/', views.PostData.as_view()),
+    path('', views.get_index),
 ]
